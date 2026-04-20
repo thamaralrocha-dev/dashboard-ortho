@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -105,7 +106,10 @@
     .k-title { font-family: var(--font-h); font-size: 11px; font-weight: 600; color: var(--ot-text-1); line-height: 1.4; font-style: italic; border-radius: var(--r-sm); padding: 2px 4px; cursor: text; transition: background 0.15s; }
     .k-title:hover { background: var(--ot-surface-2); }
     .k-title:focus { outline: 1.5px solid var(--ot-primary); background: var(--ot-surface); font-style: normal; }
-    .k-date { font-size: 10px; color: var(--ot-text-3); margin-top: 4px; }
+    .k-date { font-size: 10px; color: var(--ot-text-3); margin-top: 4px; display: flex; gap: 4px; align-items: center; }
+    .k-date-part { border-radius: var(--r-sm); padding: 1px 3px; cursor: text; transition: background 0.15s; }
+    .k-date-part:hover { background: var(--ot-surface-2); }
+    .k-date-part:focus { outline: 1.5px solid var(--ot-primary); background: var(--ot-surface); }
     .k-drive { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
     .k-drive input { flex: 1; font-size: 10px; border: 1px solid var(--ot-border-sub); border-radius: var(--r-sm); padding: 3px 6px; background: var(--ot-bg); color: var(--ot-text-2); font-family: var(--font-b); outline: none; min-width: 0; }
     .k-drive input:focus { border-color: var(--ot-primary); background: var(--ot-surface); }
@@ -138,8 +142,12 @@
     .plan-row { display: flex; align-items: center; gap: var(--sp-3); padding: 9px 14px; background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-radius: var(--r-md); margin-bottom: var(--sp-2); box-shadow: var(--shadow-sm); transition: border-color 0.2s; }
     .plan-row.state-ok { border-left: 3px solid var(--ot-ok); }
     .plan-row.state-alert { border-left: 3px solid var(--ot-alert); }
-    .plan-date { font-family: var(--font-h); font-size: 11px; font-weight: 700; color: var(--ot-text-1); min-width: 44px; }
-    .plan-day { font-size: 11px; color: var(--ot-text-3); min-width: 52px; }
+    .plan-date { font-family: var(--font-h); font-size: 11px; font-weight: 700; color: var(--ot-text-1); min-width: 44px; border-radius: var(--r-sm); padding: 2px 4px; cursor: text; transition: background 0.15s; }
+    .plan-date:hover { background: var(--ot-surface-2); }
+    .plan-date:focus { outline: 1.5px solid var(--ot-primary); background: var(--ot-surface); }
+    .plan-day { font-size: 11px; color: var(--ot-text-3); min-width: 52px; border-radius: var(--r-sm); padding: 2px 4px; cursor: text; transition: background 0.15s; }
+    .plan-day:hover { background: var(--ot-surface-2); }
+    .plan-day:focus { outline: 1.5px solid var(--ot-primary); background: var(--ot-surface); }
     .plan-format-pill { font-family: var(--font-h); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
     .fmt-reel { background: #EEEDFE; color: #3C3489; }
     .fmt-car  { background: #E1F5EE; color: #085041; }
@@ -325,6 +333,11 @@
 </div>
 
 <script>
+const SUPABASE_URL = 'https://omnvnxxvyasdikuoxsrf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tbnZueHh2eWFzZGlrdW94c3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDgzODUsImV4cCI6MjA5MTE4NDM4NX0.PWQcn7JJGY2tf022e0dVULmALOeex2S0hItmueQ7xno';
+const CLIENTE = 'orthotechniques';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const items = [
   {id:'c1', fase:'f1', faseLabel:'Fase 1', format:'Reel Promocional', fmtCls:'fmt-reel', title:'Chamada Mentor A',                          date:'20/04', day:'Dom',          state:'alert', posted:false, driveLink:'', legenda:''},
   {id:'c2', fase:'f1', faseLabel:'Fase 1', format:'Carrossel',         fmtCls:'fmt-car',  title:'Casos Reais, Dúvidas Reais',                  date:'21/04', day:'Seg',          state:'warn',  posted:false, driveLink:'', legenda:''},
@@ -352,6 +365,53 @@ const stateMap = {
   scheduled: {col:'scheduled', rowCls:'state-scheduled', badgeCls:'badge-scheduled', btnCls:'active-scheduled', label:'📅 Programado'},
 };
 
+async function loadFromSupabase() {
+  const { data, error } = await db
+    .from('calendario_itens')
+    .select('*')
+    .eq('cliente', CLIENTE);
+  if (error || !data || data.length === 0) return;
+  data.forEach(row => {
+    const item = items.find(i => i.id === row.id);
+    if (item) {
+      item.state     = row.state     || item.state;
+      item.posted    = row.posted    ?? item.posted;
+      item.title     = row.title     || item.title;
+      item.driveLink = row.drivelink || item.driveLink;
+      item.legenda   = row.legenda   || item.legenda;
+      item.date      = row.date      || item.date;
+      item.day       = row.day       || item.day;
+    }
+  });
+}
+
+async function saveItem(item) {
+  const { error } = await db.from('calendario_itens').upsert({
+    id:        item.id,
+    cliente:   CLIENTE,
+    state:     item.state,
+    posted:    item.posted,
+    title:     item.title,
+    drivelink: item.driveLink,
+    legenda:   item.legenda,
+    date:      item.date,
+    day:       item.day
+  }, { onConflict: 'id' });
+
+  // fallback: se falhou (ex: colunas date/day ainda não existem na tabela)
+  if (error) {
+    await db.from('calendario_itens').upsert({
+      id:        item.id,
+      cliente:   CLIENTE,
+      state:     item.state,
+      posted:    item.posted,
+      title:     item.title,
+      drivelink: item.driveLink,
+      legenda:   item.legenda
+    }, { onConflict: 'id' });
+  }
+}
+
 function renderKanban() {
   ['alert','warn','ok','scheduled'].forEach(s => document.getElementById('kcol-'+s).innerHTML = '');
   items.forEach(item => {
@@ -368,7 +428,17 @@ function renderKanban() {
            onblur="saveKanbanTitle('${item.id}', this)"
            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
            title="Clique para editar título">${item.title}</div>
-      <div class="k-date">${item.date} · ${item.day}</div>
+      <div class="k-date">
+        <span class="k-date-part" contenteditable="true" spellcheck="false"
+              onblur="saveDate('${item.id}','date',this)"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+              title="Clique para editar data">${item.date}</span>
+        <span style="opacity:0.4">·</span>
+        <span class="k-date-part" contenteditable="true" spellcheck="false"
+              onblur="saveDate('${item.id}','day',this)"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+              title="Clique para editar dia">${item.day}</span>
+      </div>
       <button class="k-expand-btn" onclick="toggleCardExtra('${extraId}', this)">▸ Drive &amp; Legenda</button>
       <div class="k-extra" id="${extraId}">
         <span class="k-field-label">Link Drive</span>
@@ -404,8 +474,14 @@ function renderPlan() {
     const row = document.createElement('div');
     row.className = 'plan-row ' + s.rowCls + (item.posted ? ' posted' : '');
     row.innerHTML = `
-      <span class="plan-date">${item.date}</span>
-      <span class="plan-day">${item.day}</span>
+      <span class="plan-date" contenteditable="true" spellcheck="false"
+            onblur="saveDate('${item.id}','date',this)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+            title="Clique para editar data">${item.date}</span>
+      <span class="plan-day" contenteditable="true" spellcheck="false"
+            onblur="saveDate('${item.id}','day',this)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+            title="Clique para editar dia">${item.day}</span>
       <span class="plan-format-pill ${item.fmtCls}">${item.format}</span>
       <span class="plan-title" contenteditable="true" spellcheck="false" onblur="saveTitle('${item.id}', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" title="Clique para editar">${item.title || 'A definir...'}</span>
       <div class="post-check-wrap">
@@ -423,6 +499,7 @@ function saveTitle(id, el) {
   if (item) {
     item.title = newTitle || 'A definir...';
     if (!newTitle) el.textContent = 'A definir...';
+    saveItem(item);
   }
   renderKanban();
 }
@@ -437,14 +514,14 @@ function toggleSection(bodyId, btnId) {
 
 function togglePosted(id) {
   const item = items.find(i => i.id === id);
-  if (item) item.posted = !item.posted;
+  if (item) { item.posted = !item.posted; saveItem(item); }
   renderPlan();
   updateStats();
 }
 
 function setState(id, state) {
   const item = items.find(i => i.id === id);
-  if (item) item.state = state;
+  if (item) { item.state = state; saveItem(item); }
   renderKanban();
   renderPlan();
   updateStats();
@@ -474,14 +551,14 @@ function togglePending(li) { li.classList.toggle('done'); }
 function saveKanbanTitle(id, el) {
   const item = items.find(i => i.id === id);
   const val = el.textContent.trim();
-  if (item) { item.title = val || 'A definir...'; if (!val) el.textContent = 'A definir...'; }
+  if (item) { item.title = val || 'A definir...'; if (!val) el.textContent = 'A definir...'; saveItem(item); }
   renderPlan();
 }
 
 function saveDriveLink(id, val, linkId) {
   const item = items.find(i => i.id === id);
   const url = val.trim();
-  if (item) item.driveLink = url;
+  if (item) { item.driveLink = url; saveItem(item); }
   if (linkId) {
     const a = document.getElementById(linkId);
     if (a) {
@@ -498,9 +575,35 @@ function toggleCardExtra(extraId, btn) {
   btn.textContent = open ? '▾ Drive & Legenda' : '▸ Drive & Legenda';
 }
 
+function dateToWeekDay(dateStr) {
+  const names = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const [d, m] = dateStr.split('/').map(Number);
+  if (!d || !m) return null;
+  const year = new Date().getFullYear();
+  return names[new Date(year, m - 1, d).getDay()];
+}
+
+function saveDate(id, field, el) {
+  const item = items.find(i => i.id === id);
+  const val = el.textContent.trim();
+  if (!item || !val) return;
+  item[field] = val;
+  if (field === 'date') {
+    const newDay = dateToWeekDay(val);
+    if (newDay) {
+      // preserva sufixo como " — manhã" ou " — tarde"
+      const suffix = item.day.includes(' — ') ? item.day.slice(item.day.indexOf(' — ')) : '';
+      item.day = newDay + suffix;
+    }
+  }
+  saveItem(item);
+  renderKanban();
+  renderPlan();
+}
+
 function saveLegenda(id, val) {
   const item = items.find(i => i.id === id);
-  if (item) item.legenda = val;
+  if (item) { item.legenda = val; saveItem(item); }
 }
 
 function togglePhase(bodyId, btnId) {
@@ -511,9 +614,11 @@ function togglePhase(bodyId, btnId) {
   btn.textContent = isCollapsed ? '−' : '+';
 }
 
-renderKanban();
-renderPlan();
-updateStats();
+loadFromSupabase().then(() => {
+  renderKanban();
+  renderPlan();
+  updateStats();
+});
 </script>
 </body>
 </html>
