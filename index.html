@@ -333,7 +333,7 @@
     </ul>
   </div>
 
-  <p class="page-footer">Clique no status de cada peça para alternar · Clique nas pendências para marcar como concluído</p>
+  <p class="page-footer">Clique no status de cada peça para alternar · Clique nas pendências para marcar como concluído · <span style="cursor:pointer;color:var(--ot-alert);text-decoration:underline;" onclick="resetarPostados()">Limpar todos os postados</span></p>
 
 </div>
 
@@ -380,7 +380,6 @@ async function loadFromSupabase() {
     const item = items.find(i => i.id === row.id);
     if (item) {
       item.state     = row.state     || item.state;
-      item.posted    = row.posted    ?? item.posted;
       item.title     = row.title     || item.title;
       item.driveLink = row.drivelink || item.driveLink;
       item.legenda   = row.legenda   || item.legenda;
@@ -391,7 +390,7 @@ async function loadFromSupabase() {
 }
 
 async function saveItem(item) {
-  const { error } = await db.from('calendario_itens').upsert({
+  const payload = {
     id:        item.id,
     cliente:   CLIENTE,
     state:     item.state,
@@ -401,11 +400,11 @@ async function saveItem(item) {
     legenda:   item.legenda,
     date:      item.date,
     day:       item.day
-  }, { onConflict: 'id' });
-
-  // fallback: se falhou (ex: colunas date/day ainda não existem na tabela)
+  };
+  const { error } = await db.from('calendario_itens').upsert(payload, { onConflict: 'id' });
   if (error) {
-    await db.from('calendario_itens').upsert({
+    console.warn('saveItem (full) falhou, tentando fallback:', error.message);
+    const { error: err2 } = await db.from('calendario_itens').upsert({
       id:        item.id,
       cliente:   CLIENTE,
       state:     item.state,
@@ -414,7 +413,16 @@ async function saveItem(item) {
       drivelink: item.driveLink,
       legenda:   item.legenda
     }, { onConflict: 'id' });
+    if (err2) console.error('saveItem (fallback) também falhou:', err2.message);
   }
+}
+
+function resetarPostados() {
+  if (!confirm('Deseja limpar o estado "Postado" de todos os itens?')) return;
+  items.forEach(i => i.posted = false);
+  saveAllPosted();
+  renderPlan();
+  updateStats();
 }
 
 function renderKanban() {
@@ -526,9 +534,39 @@ function toggleSection(bodyId, btnId) {
   btn.textContent = isCollapsed ? '−' : '+';
 }
 
+const META_ID = '__posted_meta__';
+
+async function loadPostedFromSupabase() {
+  const { data } = await db.from('calendario_itens')
+    .select('legenda')
+    .eq('id', META_ID)
+    .eq('cliente', CLIENTE)
+    .maybeSingle();
+  if (data && data.legenda) {
+    try {
+      const postedIds = JSON.parse(data.legenda);
+      items.forEach(i => { i.posted = postedIds.includes(i.id); });
+    } catch {}
+  }
+}
+
+async function saveAllPosted() {
+  const postedIds = items.filter(i => i.posted).map(i => i.id);
+  const { error } = await db.from('calendario_itens').upsert({
+    id: META_ID,
+    cliente: CLIENTE,
+    legenda: JSON.stringify(postedIds),
+    state: 'warn',
+    posted: false,
+    title: '',
+    drivelink: ''
+  }, { onConflict: 'id' });
+  if (error) console.error('Erro ao salvar postados:', error.message);
+}
+
 function togglePosted(id) {
   const item = items.find(i => i.id === id);
-  if (item) { item.posted = !item.posted; saveItem(item); }
+  if (item) { item.posted = !item.posted; saveAllPosted(); }
   renderPlan();
   updateStats();
 }
@@ -639,7 +677,8 @@ function togglePhase(bodyId, btnId) {
   btn.textContent = isCollapsed ? '−' : '+';
 }
 
-loadFromSupabase().then(() => {
+loadFromSupabase().then(async () => {
+  await loadPostedFromSupabase();
   sortItems();
   renderKanban();
   renderPlan();
