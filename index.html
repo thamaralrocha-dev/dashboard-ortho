@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendário Editorial — OrthoTechniques</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ot-primary:    #02bd95;
+      --ot-deep:       #066f5e;
+      --ot-dark:       #182630;
+      --ot-light:      #89d7c4;
+      --ot-bg:         #f4f6f5;
+      --ot-surface:    #ffffff;
+      --ot-surface-2:  #edf6f3;
+      --ot-border:     rgba(2,189,149,0.18);
+      --ot-border-sub: #e2e8e6;
+      --ot-text-1:     #182630;
+      --ot-text-2:     #3a5060;
+      --ot-text-3:     #6b8898;
+      --ot-ok:         #15803d;
+      --ot-ok-bg:      #dcfce7;
+      --ot-warn:       #92400e;
+      --ot-warn-bg:    #fef3c7;
+      --ot-alert:      #9a3412;
+      --ot-alert-bg:   #ffedd5;
+      --sp-1:4px; --sp-2:8px; --sp-3:12px;
+      --sp-4:16px; --sp-5:24px; --sp-6:32px;
+      --sp-7:48px; --sp-8:64px;
+      --r-sm:6px; --r-md:10px; --r-lg:14px;
+      --font-h: 'Montserrat', sans-serif;
+      --font-b: 'DM Sans', sans-serif;
+      --shadow-sm: 0 1px 3px rgba(24,38,48,0.07);
+      --shadow-md: 0 4px 14px rgba(24,38,48,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-b); background: var(--ot-bg); color: var(--ot-text-1); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+    /* ── Header ── */
+    .page-header { background: var(--ot-surface); border-bottom: 3px solid var(--ot-primary); padding: var(--sp-5) var(--sp-7); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-4); box-shadow: var(--shadow-sm); }
+    .page-header img { height: 44px; display: block; }
+    .header-meta { text-align: right; }
+    .header-meta .doc-title { font-family: var(--font-h); font-size: 17px; font-weight: 700; color: var(--ot-text-1); }
+    .header-meta .doc-sub { font-size: 12px; color: var(--ot-text-3); margin-top: 2px; }
+
+    /* ── Container ── */
+    .container { max-width: 900px; margin: 0 auto; padding: var(--sp-6) var(--sp-5) var(--sp-8); }
+
+    /* ── Stats ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-5); }
+    .stat-card { background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-top: 3px solid var(--ot-primary); border-radius: var(--r-md); padding: var(--sp-4); box-shadow: var(--shadow-sm); text-align: center; }
+    .stat-label { font-family: var(--font-h); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ot-text-3); margin-bottom: var(--sp-2); }
+    .stat-value { font-family: var(--font-h); font-size: 22px; font-weight: 700; color: var(--ot-primary); line-height: 1; }
+
+    /* ── Progresso ── */
+    .progress-wrap { background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-radius: var(--r-md); padding: var(--sp-4); margin-bottom: var(--sp-4); box-shadow: var(--shadow-sm); }
+    .progress-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-2); }
+    .progress-label { font-family: var(--font-h); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ot-text-3); }
+    .progress-count { font-family: var(--font-h); font-size: 13px; font-weight: 700; color: var(--ot-primary); }
+    .progress-bar-bg { height: 6px; background: var(--ot-border-sub); border-radius: 99px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--ot-primary); border-radius: 99px; transition: width 0.4s ease; }
+
+    /* ── Mini stats aprovação ── */
+    .approval-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--sp-3); margin-bottom: var(--sp-5); }
+    .apv-card { background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); text-align: center; box-shadow: var(--shadow-sm); }
+    .apv-label { font-family: var(--font-h); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ot-text-3); margin-bottom: 4px; }
+    .apv-val { font-family: var(--font-h); font-size: 20px; font-weight: 700; }
+    .apv-val.ok { color: var(--ot-ok); }
+    .apv-val.warn { color: var(--ot-warn); }
+    .apv-val.alert { color: var(--ot-alert); }
+    .apv-val.scheduled { color: #5b21b6; }
+
+    /* ── Section divider ── */
+    .section-toggle { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-3); }
+    .toggle-btn { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ot-border-sub); background: var(--ot-surface); cursor: pointer; font-size: 14px; color: var(--ot-text-3); font-weight: 700; line-height: 1; transition: all 0.15s; flex-shrink: 0; }
+    .toggle-btn:hover { background: var(--ot-surface-2); border-color: var(--ot-primary); color: var(--ot-primary); }
+    .collapsible { transition: all 0.2s ease; overflow: hidden; }
+    .collapsible.collapsed { display: none; }
+    .section-label { font-family: var(--font-h); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ot-primary); margin-bottom: var(--sp-2); }
+    .section-title { font-family: var(--font-h); font-size: 17px; font-weight: 700; color: var(--ot-text-1); margin-bottom: var(--sp-5); }
+
+    /* ── KANBAN ── */
+    .kanban-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--sp-4); }
+    .kanban-col-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--sp-3); border-bottom: 2px solid var(--ot-border-sub); margin-bottom: var(--sp-3); }
+    .kanban-col-title { font-family: var(--font-h); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ot-text-3); }
+    .kanban-col-count { font-family: var(--font-h); font-size: 12px; font-weight: 700; background: var(--ot-surface-2); color: var(--ot-text-3); padding: 1px 8px; border-radius: 99px; }
+    .kanban-col-body { display: flex; flex-direction: column; gap: var(--sp-2); min-height: 80px; }
+
+    .k-card { background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-radius: var(--r-md); padding: 10px 12px; box-shadow: var(--shadow-sm); }
+    .k-card.state-ok { border-left: 3px solid var(--ot-ok); }
+    .k-card.state-alert { border-left: 3px solid var(--ot-alert); }
+    .k-card.state-warn { border-left: 3px solid #d97706; }
+    .k-card.state-scheduled { border-left: 3px solid #7c3aed; }
+    .k-fase { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+    .k-fase.f1 { color: #185FA5; }
+    .k-fase.f2 { color: #854F0B; }
+    .k-fase.f3 { color: var(--ot-deep); }
+    .k-format { font-size: 10px; color: var(--ot-text-3); margin-bottom: 2px; }
+    .k-title { font-family: var(--font-h); font-size: 11px; font-weight: 600; color: var(--ot-text-1); line-height: 1.4; font-style: italic; border-radius: var(--r-sm); padding: 2px 4px; cursor: text; transition: background 0.15s; }
+    .k-title:hover { background: var(--ot-surface-2); }
+    .k-title:focus { outline: 1.5px solid var(--ot-primary); background: var(--ot-surface); font-style: normal; }
+    .k-date { font-size: 10px; color: var(--ot-text-3); margin-top: 4px; }
+    .k-drive { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+    .k-drive input { flex: 1; font-size: 10px; border: 1px solid var(--ot-border-sub); border-radius: var(--r-sm); padding: 3px 6px; background: var(--ot-bg); color: var(--ot-text-2); font-family: var(--font-b); outline: none; min-width: 0; }
+    .k-drive input:focus { border-color: var(--ot-primary); background: var(--ot-surface); }
+    .k-drive a { font-size: 13px; flex-shrink: 0; text-decoration: none; opacity: 0.6; transition: opacity 0.15s; }
+    .k-drive a:hover { opacity: 1; }
+    .k-legenda textarea { width: 100%; font-size: 10px; border: 1px solid var(--ot-border-sub); border-radius: var(--r-sm); padding: 3px 6px; background: var(--ot-bg); color: var(--ot-text-2); font-family: var(--font-b); outline: none; resize: none; margin-top: 4px; line-height: 1.4; }
+    .k-legenda textarea:focus { border-color: var(--ot-primary); background: var(--ot-surface); }
+    .k-field-label { font-family: var(--font-h); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ot-text-3); margin-top: 6px; display: block; }
+    .k-extra { display: none; border-top: 1px dashed var(--ot-border-sub); margin-top: 6px; padding-top: 6px; }
+    .k-extra.open { display: block; }
+    .k-expand-btn { font-size: 10px; color: var(--ot-text-3); cursor: pointer; background: none; border: none; padding: 0; font-family: var(--font-h); font-weight: 600; letter-spacing: 0.04em; margin-top: 5px; display: block; }
+    .k-expand-btn:hover { color: var(--ot-primary); }
+    .k-actions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .k-btn { font-size: 10px; padding: 2px 7px; border-radius: 99px; border: 1px solid var(--ot-border-sub); background: var(--ot-bg); color: var(--ot-text-3); cursor: pointer; font-family: var(--font-h); font-weight: 600; transition: all 0.12s; }
+    .k-btn:hover { background: var(--ot-surface-2); }
+    .k-btn.active-ok { background: var(--ot-ok-bg); border-color: #86efac; color: var(--ot-ok); }
+    .k-btn.active-warn { background: var(--ot-warn-bg); border-color: #fcd34d; color: var(--ot-warn); }
+    .k-btn.active-alert { background: var(--ot-alert-bg); border-color: #fdba74; color: var(--ot-alert); }
+    .k-btn.active-scheduled { background: #ede9fe; border-color: #a78bfa; color: #5b21b6; }
+
+    /* ── PLANEJAMENTO ── */
+    .plan-phase { margin-bottom: var(--sp-6); }
+    .plan-phase-head { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-2); padding-bottom: var(--sp-3); border-bottom: 2px solid var(--ot-primary); cursor: pointer; }
+    .plan-phase-head:hover .toggle-btn { border-color: var(--ot-primary); color: var(--ot-primary); background: var(--ot-surface-2); }
+    .plan-phase-num { background: var(--ot-primary); color: var(--ot-dark); font-family: var(--font-h); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: var(--r-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+    .plan-phase-title { font-family: var(--font-h); font-size: 15px; font-weight: 700; color: var(--ot-text-1); }
+    .plan-phase-dates { font-size: 12px; color: var(--ot-text-3); margin-left: auto; }
+    .plan-phase-desc { font-size: 12px; color: var(--ot-text-3); font-style: italic; margin-bottom: var(--sp-3); padding-left: 2px; }
+
+    .plan-row { display: flex; align-items: center; gap: var(--sp-3); padding: 9px 14px; background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-radius: var(--r-md); margin-bottom: var(--sp-2); box-shadow: var(--shadow-sm); transition: border-color 0.2s; }
+    .plan-row.state-ok { border-left: 3px solid var(--ot-ok); }
+    .plan-row.state-alert { border-left: 3px solid var(--ot-alert); }
+    .plan-date { font-family: var(--font-h); font-size: 11px; font-weight: 700; color: var(--ot-text-1); min-width: 44px; }
+    .plan-day { font-size: 11px; color: var(--ot-text-3); min-width: 52px; }
+    .plan-format-pill { font-family: var(--font-h); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+    .fmt-reel { background: #EEEDFE; color: #3C3489; }
+    .fmt-car  { background: #E1F5EE; color: #085041; }
+    .fmt-est  { background: #FAEEDA; color: #633806; }
+    .fmt-vid  { background: #E6F1FB; color: #0C447C; }
+    .plan-title { font-family: var(--font-h); font-size: 12px; font-weight: 600; color: var(--ot-text-1); flex: 1; font-style: italic; line-height: 1.3; border-radius: var(--r-sm); padding: 2px 5px; cursor: text; transition: background 0.15s; min-width: 60px; }
+    .plan-title:hover { background: var(--ot-surface-2); }
+    .plan-title:focus { outline: 1.5px solid var(--ot-primary); background: var(--ot-surface); font-style: normal; }
+    .post-check-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+    .post-check { width: 20px; height: 20px; border: 1.5px solid var(--ot-border-sub); border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: var(--ot-surface); }
+    .post-check:hover { border-color: var(--ot-primary); background: var(--ot-surface-2); }
+    .post-check.checked { background: var(--ot-ok); border-color: var(--ot-ok); }
+    .post-check.checked::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; line-height: 1; }
+    .post-check-label { font-family: var(--font-h); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ot-text-3); }
+    .plan-row.posted { background: var(--ot-surface-2); opacity: 0.7; }
+    .plan-row.posted .plan-title { text-decoration: line-through; color: var(--ot-text-3); }
+
+    /* ── Pendências ── */
+    .callout { background: var(--ot-surface); border: 1px solid var(--ot-border-sub); border-left: 4px solid var(--ot-warn); border-radius: 0 var(--r-md) var(--r-md) 0; padding: var(--sp-5); margin-top: var(--sp-5); box-shadow: var(--shadow-sm); }
+    .callout-title { font-family: var(--font-h); font-size: 13px; font-weight: 700; color: var(--ot-text-1); margin-bottom: var(--sp-4); display: flex; align-items: center; gap: var(--sp-2); }
+    .callout-title::before { content: '⚠'; color: var(--ot-warn); }
+    .pending-list { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
+    .pending-list li { display: flex; align-items: flex-start; gap: var(--sp-2); font-size: 13px; color: var(--ot-text-2); cursor: pointer; transition: opacity 0.2s; }
+    .pending-list li.done { opacity: 0.4; text-decoration: line-through; }
+    .pending-check { width: 17px; height: 17px; min-width: 17px; border: 1.5px solid var(--ot-primary); border-radius: 4px; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .pending-list li.done .pending-check { background: var(--ot-ok); border-color: var(--ot-ok); }
+    .pending-list li.done .pending-check::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+    .critical { font-weight: 700; color: var(--ot-alert); }
+
+    .page-footer { margin-top: var(--sp-8); padding-top: var(--sp-4); border-top: 1px solid var(--ot-border-sub); font-size: 11.5px; color: var(--ot-text-3); text-align: center; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <img src="../../design-system/LOGO/LOGO ORT-01.png" alt="OrthoTechniques" />
+  <div class="header-meta">
+    <div class="doc-title">Calendário Editorial — Lançamento</div>
+    <div class="doc-sub">Atualizado em 18/04/2026 &nbsp;·&nbsp; Canal: Instagram &nbsp;·&nbsp; Abertura: 05/05/2026</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Stats gerais -->
+  <div class="stat-grid" style="margin-top: var(--sp-5);">
+    <div class="stat-card"><div class="stat-label">Total de peças</div><div class="stat-value">17</div></div>
+    <div class="stat-card"><div class="stat-label">Período</div><div class="stat-value" style="font-size:15px;">20/04–05/05</div></div>
+    <div class="stat-card"><div class="stat-label">Canal</div><div class="stat-value" style="font-size:15px;">Instagram</div></div>
+    <div class="stat-card"><div class="stat-label">Abertura</div><div class="stat-value" style="font-size:15px;">05/05</div></div>
+    <div class="stat-card"><div class="stat-label">Vagas</div><div class="stat-value">30</div></div>
+  </div>
+
+  <!-- Progresso -->
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">Progresso de aprovações</span>
+      <span class="progress-count" id="prog-text">0 / 17 aprovados</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+
+  <!-- Mini stats -->
+  <div class="approval-stats">
+    <div class="apv-card"><div class="apv-label">Aprovados</div><div class="apv-val ok" id="cnt-ok">0</div></div>
+    <div class="apv-card"><div class="apv-label">Em edição</div><div class="apv-val alert" id="cnt-alert">2</div></div>
+    <div class="apv-card"><div class="apv-label">Aguardando</div><div class="apv-val warn" id="cnt-warn">15</div></div>
+    <div class="apv-card"><div class="apv-label">Programado</div><div class="apv-val scheduled" id="cnt-scheduled">0</div></div>
+  </div>
+
+  <!-- ══ KANBAN ══ -->
+  <hr class="section-divider">
+  <div class="section-toggle">
+    <div>
+      <div class="section-label">Kanban</div>
+      <div class="section-title" style="margin-bottom:0">O que está pronto, o que falta fazer.</div>
+    </div>
+    <div class="toggle-btn" id="kanban-toggle" onclick="toggleSection('kanban-body','kanban-toggle')">−</div>
+  </div>
+  <div id="kanban-body" class="collapsible">
+
+  <div class="kanban-grid">
+    <div>
+      <div class="kanban-col-head">
+        <span class="kanban-col-title">Em edição</span>
+        <span class="kanban-col-count" id="kcnt-alert">2</span>
+      </div>
+      <div class="kanban-col-body" id="kcol-alert"></div>
+    </div>
+    <div>
+      <div class="kanban-col-head">
+        <span class="kanban-col-title">Aguardando</span>
+        <span class="kanban-col-count" id="kcnt-warn">15</span>
+      </div>
+      <div class="kanban-col-body" id="kcol-warn"></div>
+    </div>
+    <div>
+      <div class="kanban-col-head">
+        <span class="kanban-col-title">Aprovado</span>
+        <span class="kanban-col-count" id="kcnt-ok">0</span>
+      </div>
+      <div class="kanban-col-body" id="kcol-ok"></div>
+    </div>
+    <div>
+      <div class="kanban-col-head">
+        <span class="kanban-col-title">📅 Programado</span>
+        <span class="kanban-col-count" id="kcnt-scheduled">0</span>
+      </div>
+      <div class="kanban-col-body" id="kcol-scheduled"></div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- ══ PLANEJAMENTO ══ -->
+  <hr class="section-divider">
+  <div class="section-toggle">
+    <div>
+      <div class="section-label">Planejamento completo</div>
+      <div class="section-title" id="plan-count-title" style="margin-bottom:0">17 peças · 3 fases · 16 dias</div>
+    </div>
+    <div class="toggle-btn" id="plan-toggle" onclick="toggleSection('plan-body','plan-toggle')">−</div>
+  </div>
+  <div id="plan-body" class="collapsible">
+
+  <!-- Fase 1 -->
+  <div class="plan-phase">
+    <div class="plan-phase-head" onclick="togglePhase('phase-f1-body','phase-f1-btn')">
+      <span class="plan-phase-num">Fase 1</span>
+      <span class="plan-phase-title">Autoridade</span>
+      <span class="plan-phase-dates">20 – 27/04</span>
+      <div class="toggle-btn" id="phase-f1-btn">−</div>
+    </div>
+    <div id="phase-f1-body" class="collapsible">
+      <p class="plan-phase-desc">Reativar presença, construir autoridade, falar da dor — sem revelar o produto ainda.</p>
+      <div id="plan-f1"></div>
+    </div>
+  </div>
+
+  <!-- Fase 2 -->
+  <div class="plan-phase">
+    <div class="plan-phase-head" onclick="togglePhase('phase-f2-body','phase-f2-btn')">
+      <span class="plan-phase-num">Fase 2</span>
+      <span class="plan-phase-title">Apresentação e prova</span>
+      <span class="plan-phase-dates">28/04 – 04/05</span>
+      <div class="toggle-btn" id="phase-f2-btn">−</div>
+    </div>
+    <div id="phase-f2-body" class="collapsible">
+      <p class="plan-phase-desc">Revelar a comunidade, mostrar o que existe dentro, construir urgência.</p>
+      <div id="plan-f2"></div>
+    </div>
+  </div>
+
+  <!-- Fase 3 -->
+  <div class="plan-phase">
+    <div class="plan-phase-head" onclick="togglePhase('phase-f3-body','phase-f3-btn')">
+      <span class="plan-phase-num" style="background:var(--ot-deep)">Fase 3</span>
+      <span class="plan-phase-title">Lançamento</span>
+      <span class="plan-phase-dates">05/05</span>
+      <div class="toggle-btn" id="phase-f3-btn">−</div>
+    </div>
+    <div id="phase-f3-body" class="collapsible">
+      <p class="plan-phase-desc">Abrir o carrinho e converter com urgência real. 30 vagas.</p>
+      <div id="plan-f3"></div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Pendências -->
+  <div class="callout">
+    <div class="callout-title">Pendências urgentes antes de 20/04</div>
+    <ul class="pending-list">
+      <li onclick="togglePending(this)"><div class="pending-check"></div><span>Edição do nome OrthoTechniques nos 2 reels promocionais — <span class="critical">crítico para domingo</span></span></li>
+      <li onclick="togglePending(this)"><div class="pending-check"></div><span>Enviar todos os conteúdos para aprovação dos mentores — <span class="critical">hoje</span></span></li>
+      <li onclick="togglePending(this)"><div class="pending-check"></div><span>Confirmar ticket na Hotmart — prazo máximo 25/04</span></li>
+      <li onclick="togglePending(this)"><div class="pending-check"></div><span>Testar checkout com compra real na Hotmart</span></li>
+    </ul>
+  </div>
+
+  <p class="page-footer">Clique no status de cada peça para alternar · Clique nas pendências para marcar como concluído</p>
+
+</div>
+
+<script>
+const items = [
+  {id:'c1', fase:'f1', faseLabel:'Fase 1', format:'Reel Promocional', fmtCls:'fmt-reel', title:'Chamada Mentor A',                          date:'20/04', day:'Dom',          state:'alert', posted:false, driveLink:'', legenda:''},
+  {id:'c2', fase:'f1', faseLabel:'Fase 1', format:'Carrossel',         fmtCls:'fmt-car',  title:'Casos Reais, Dúvidas Reais',                  date:'21/04', day:'Seg',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c3', fase:'f1', faseLabel:'Fase 1', format:'Reel Videoteca',    fmtCls:'fmt-vid',  title:'Recorte cirúrgico 1',                          date:'22/04', day:'Ter',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c4', fase:'f1', faseLabel:'Fase 1', format:'Carrossel',         fmtCls:'fmt-car',  title:'Se você ignorar isso, o pós-op cobra',         date:'23/04', day:'Qua',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c5', fase:'f1', faseLabel:'Fase 1', format:'Reel Promocional',  fmtCls:'fmt-reel', title:'Chamada Mentor B',                             date:'24/04', day:'Qui',          state:'alert', posted:false, driveLink:'', legenda:''},
+  {id:'c6', fase:'f1', faseLabel:'Fase 1', format:'Reel Videoteca',    fmtCls:'fmt-vid',  title:'Recorte cirúrgico 2',                          date:'25/04', day:'Sex',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c7', fase:'f1', faseLabel:'Fase 1', format:'Estático',          fmtCls:'fmt-est',  title:'O caso não era difícil. A decisão era.',       date:'26/04', day:'Sáb',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c8', fase:'f2', faseLabel:'Fase 2', format:'Carrossel',         fmtCls:'fmt-car',  title:'Seu próximo caso não precisa ser solitário',   date:'28/04', day:'Seg',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c9', fase:'f2', faseLabel:'Fase 2', format:'Reel Videoteca',    fmtCls:'fmt-vid',  title:'Recorte cirúrgico 3',                          date:'29/04', day:'Ter',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c10',fase:'f2', faseLabel:'Fase 2', format:'Carrossel',         fmtCls:'fmt-car',  title:'Paciente 14 anos, lesão ligamentar',           date:'30/04', day:'Qua',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c11',fase:'f2', faseLabel:'Fase 2', format:'Reel Videoteca',    fmtCls:'fmt-vid',  title:'Recorte cirúrgico 4',                          date:'01/05', day:'Qui',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c12',fase:'f2', faseLabel:'Fase 2', format:'Carrossel',         fmtCls:'fmt-car',  title:'Rotura parcial do tendão patelar',             date:'02/05', day:'Sex',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c13',fase:'f2', faseLabel:'Fase 2', format:'Estático',          fmtCls:'fmt-est',  title:'Instabilidade + desgaste tricompartmental',    date:'03/05', day:'Sáb',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c14',fase:'f2', faseLabel:'Fase 2', format:'Reel Videoteca',    fmtCls:'fmt-vid',  title:'Recorte cirúrgico 5',                          date:'03/05', day:'Sáb',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c15',fase:'f2', faseLabel:'Fase 2', format:'Reel Videoteca',    fmtCls:'fmt-vid',  title:'Recorte cirúrgico 6',                          date:'04/05', day:'Dom',          state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c16',fase:'f3', faseLabel:'Fase 3', format:'Estático',          fmtCls:'fmt-est',  title:'Você não precisa decidir isso sozinho',        date:'05/05', day:'Dom — manhã',  state:'warn',  posted:false, driveLink:'', legenda:''},
+  {id:'c17',fase:'f3', faseLabel:'Fase 3', format:'Carrossel',         fmtCls:'fmt-car',  title:'Fratura do polo inferior',                     date:'05/05', day:'Dom — tarde',  state:'warn',  posted:false, driveLink:'', legenda:''},
+];
+
+const stateMap = {
+  warn:      {col:'warn',      rowCls:'',                badgeCls:'badge-warn',      btnCls:'active-warn',      label:'⏳ Aprovação'},
+  alert:     {col:'alert',     rowCls:'state-alert',     badgeCls:'badge-alert',     btnCls:'active-alert',     label:'🔧 Edição'},
+  ok:        {col:'ok',        rowCls:'state-ok',        badgeCls:'badge-ok',        btnCls:'active-ok',        label:'✅ Aprovado'},
+  scheduled: {col:'scheduled', rowCls:'state-scheduled', badgeCls:'badge-scheduled', btnCls:'active-scheduled', label:'📅 Programado'},
+};
+
+function renderKanban() {
+  ['alert','warn','ok','scheduled'].forEach(s => document.getElementById('kcol-'+s).innerHTML = '');
+  items.forEach(item => {
+    const col = document.getElementById('kcol-'+stateMap[item.state].col);
+    const card = document.createElement('div');
+    card.className = 'k-card state-'+item.state;
+    const driveHref = item.driveLink ? item.driveLink : '#';
+    const driveLinkOpacity = item.driveLink ? '1' : '0.3';
+    const extraId = 'kex-' + item.id;
+    card.innerHTML = `
+      <div class="k-fase ${item.fase}">${item.faseLabel}</div>
+      <div class="k-format">${item.format}</div>
+      <div class="k-title" contenteditable="true" spellcheck="false"
+           onblur="saveKanbanTitle('${item.id}', this)"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+           title="Clique para editar título">${item.title}</div>
+      <div class="k-date">${item.date} · ${item.day}</div>
+      <button class="k-expand-btn" onclick="toggleCardExtra('${extraId}', this)">▸ Drive &amp; Legenda</button>
+      <div class="k-extra" id="${extraId}">
+        <span class="k-field-label">Link Drive</span>
+        <div class="k-drive">
+          <input type="url" placeholder="Cole o link do Drive..." value="${item.driveLink}"
+                 id="drive-input-${item.id}"
+                 oninput="saveDriveLink('${item.id}', this.value, 'drive-link-${item.id}')"
+                 onchange="saveDriveLink('${item.id}', this.value, 'drive-link-${item.id}')" />
+          <a id="drive-link-${item.id}" href="${driveHref}" target="_blank" title="Abrir no Drive"
+             style="opacity:${driveLinkOpacity}; pointer-events:${item.driveLink ? 'auto' : 'none'}">📂</a>
+        </div>
+        <span class="k-field-label">Legenda</span>
+        <div class="k-legenda">
+          <textarea rows="2" placeholder="Cole ou escreva a legenda..."
+                    onchange="saveLegenda('${item.id}', this.value)">${item.legenda}</textarea>
+        </div>
+      </div>
+      <div class="k-actions">
+        <span class="k-btn ${item.state==='alert'?'active-alert':''}"         onclick="setState('${item.id}','alert')">🔧</span>
+        <span class="k-btn ${item.state==='warn'?'active-warn':''}"           onclick="setState('${item.id}','warn')">⏳</span>
+        <span class="k-btn ${item.state==='ok'?'active-ok':''}"               onclick="setState('${item.id}','ok')">✅</span>
+        <span class="k-btn ${item.state==='scheduled'?'active-scheduled':''}" onclick="setState('${item.id}','scheduled')">📅</span>
+      </div>`;
+    col.appendChild(card);
+  });
+}
+
+function renderPlan() {
+  ['f1','f2','f3'].forEach(f => document.getElementById('plan-'+f).innerHTML = '');
+  items.forEach(item => {
+    const container = document.getElementById('plan-'+item.fase);
+    const s = stateMap[item.state];
+    const row = document.createElement('div');
+    row.className = 'plan-row ' + s.rowCls + (item.posted ? ' posted' : '');
+    row.innerHTML = `
+      <span class="plan-date">${item.date}</span>
+      <span class="plan-day">${item.day}</span>
+      <span class="plan-format-pill ${item.fmtCls}">${item.format}</span>
+      <span class="plan-title" contenteditable="true" spellcheck="false" onblur="saveTitle('${item.id}', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" title="Clique para editar">${item.title || 'A definir...'}</span>
+      <div class="post-check-wrap">
+        <div class="post-check ${item.posted ? 'checked' : ''}" onclick="togglePosted('${item.id}')"></div>
+        <span class="post-check-label">Postado</span>
+      </div>`;
+    row.dataset.id = item.id;
+    container.appendChild(row);
+  });
+}
+
+function saveTitle(id, el) {
+  const item = items.find(i => i.id === id);
+  const newTitle = el.textContent.trim();
+  if (item) {
+    item.title = newTitle || 'A definir...';
+    if (!newTitle) el.textContent = 'A definir...';
+  }
+  renderKanban();
+}
+
+function toggleSection(bodyId, btnId) {
+  const body = document.getElementById(bodyId);
+  const btn  = document.getElementById(btnId);
+  const isCollapsed = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', !isCollapsed);
+  btn.textContent = isCollapsed ? '−' : '+';
+}
+
+function togglePosted(id) {
+  const item = items.find(i => i.id === id);
+  if (item) item.posted = !item.posted;
+  renderPlan();
+  updateStats();
+}
+
+function setState(id, state) {
+  const item = items.find(i => i.id === id);
+  if (item) item.state = state;
+  renderKanban();
+  renderPlan();
+  updateStats();
+}
+
+function updateStats() {
+  const ok        = items.filter(i => i.state === 'ok').length;
+  const warn      = items.filter(i => i.state === 'warn').length;
+  const alert     = items.filter(i => i.state === 'alert').length;
+  const scheduled = items.filter(i => i.state === 'scheduled').length;
+  const posted    = items.filter(i => i.posted).length;
+  const total     = items.length;
+  document.getElementById('cnt-ok').textContent        = ok;
+  document.getElementById('cnt-warn').textContent      = warn;
+  document.getElementById('cnt-alert').textContent     = alert;
+  document.getElementById('cnt-scheduled').textContent = scheduled;
+  document.getElementById('kcnt-ok').textContent        = ok;
+  document.getElementById('kcnt-warn').textContent      = warn;
+  document.getElementById('kcnt-alert').textContent     = alert;
+  document.getElementById('kcnt-scheduled').textContent = scheduled;
+  document.getElementById('prog-text').textContent  = ok + ' / ' + total + ' aprovados · ' + posted + ' postados';
+  document.getElementById('prog-bar').style.width   = Math.round((ok/total)*100) + '%';
+}
+
+function togglePending(li) { li.classList.toggle('done'); }
+
+function saveKanbanTitle(id, el) {
+  const item = items.find(i => i.id === id);
+  const val = el.textContent.trim();
+  if (item) { item.title = val || 'A definir...'; if (!val) el.textContent = 'A definir...'; }
+  renderPlan();
+}
+
+function saveDriveLink(id, val, linkId) {
+  const item = items.find(i => i.id === id);
+  const url = val.trim();
+  if (item) item.driveLink = url;
+  if (linkId) {
+    const a = document.getElementById(linkId);
+    if (a) {
+      a.href = url || '#';
+      a.style.opacity = url ? '1' : '0.3';
+      a.style.pointerEvents = url ? 'auto' : 'none';
+    }
+  }
+}
+
+function toggleCardExtra(extraId, btn) {
+  const el = document.getElementById(extraId);
+  const open = el.classList.toggle('open');
+  btn.textContent = open ? '▾ Drive & Legenda' : '▸ Drive & Legenda';
+}
+
+function saveLegenda(id, val) {
+  const item = items.find(i => i.id === id);
+  if (item) item.legenda = val;
+}
+
+function togglePhase(bodyId, btnId) {
+  const body = document.getElementById(bodyId);
+  const btn  = document.getElementById(btnId);
+  const isCollapsed = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', !isCollapsed);
+  btn.textContent = isCollapsed ? '−' : '+';
+}
+
+renderKanban();
+renderPlan();
+updateStats();
+</script>
+</body>
+</html>
