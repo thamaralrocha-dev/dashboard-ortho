@@ -98,6 +98,10 @@
     .k-card.state-alert { border-left: 3px solid var(--ot-alert); }
     .k-card.state-warn { border-left: 3px solid #d97706; }
     .k-card.state-scheduled { border-left: 3px solid #7c3aed; }
+    .k-card.state-posted_k { border-left: 3px solid var(--ot-ok); }
+    .k-btn.active-posted_k { background: var(--ot-ok-bg); border-color: #86efac; color: var(--ot-ok); }
+    .apv-val.posted_k { color: var(--ot-ok); }
+
     .k-fase { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
     .k-fase.f1 { color: #185FA5; }
     .k-fase.f2 { color: #854F0B; }
@@ -213,7 +217,7 @@
   <!-- Mini stats -->
   <div class="approval-stats">
     <div class="apv-card"><div class="apv-label">Aprovados</div><div class="apv-val ok" id="cnt-ok">0</div></div>
-    <div class="apv-card"><div class="apv-label">Em edição</div><div class="apv-val alert" id="cnt-alert">2</div></div>
+    <div class="apv-card"><div class="apv-label">Em produção</div><div class="apv-val alert" id="cnt-alert">2</div></div>
     <div class="apv-card"><div class="apv-label">Aguardando</div><div class="apv-val warn" id="cnt-warn">15</div></div>
     <div class="apv-card"><div class="apv-label">Programado</div><div class="apv-val scheduled" id="cnt-scheduled">0</div></div>
   </div>
@@ -232,7 +236,7 @@
   <div class="kanban-grid">
     <div>
       <div class="kanban-col-head">
-        <span class="kanban-col-title">Em edição</span>
+        <span class="kanban-col-title">Em produção</span>
         <span class="kanban-col-count" id="kcnt-alert">2</span>
       </div>
       <div class="kanban-col-body" id="kcol-alert"></div>
@@ -259,6 +263,7 @@
       <div class="kanban-col-body" id="kcol-scheduled"></div>
     </div>
   </div>
+
 
   </div>
 
@@ -360,7 +365,7 @@ const items = [
 
 const stateMap = {
   warn:      {col:'warn',      rowCls:'',                badgeCls:'badge-warn',      btnCls:'active-warn',      label:'⏳ Aprovação'},
-  alert:     {col:'alert',     rowCls:'state-alert',     badgeCls:'badge-alert',     btnCls:'active-alert',     label:'🔧 Edição'},
+  alert:     {col:'alert',     rowCls:'state-alert',     badgeCls:'badge-alert',     btnCls:'active-alert',     label:'🔧 Em produção'},
   ok:        {col:'ok',        rowCls:'state-ok',        badgeCls:'badge-ok',        btnCls:'active-ok',        label:'✅ Aprovado'},
   scheduled: {col:'scheduled', rowCls:'state-scheduled', badgeCls:'badge-scheduled', btnCls:'active-scheduled', label:'📅 Programado'},
 };
@@ -439,24 +444,27 @@ function renderKanban() {
               onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
               title="Clique para editar dia">${item.day}</span>
       </div>
-      <button class="k-expand-btn" onclick="toggleCardExtra('${extraId}', this)">▸ Drive &amp; Legenda</button>
-      <div class="k-extra" id="${extraId}">
+      <button class="k-expand-btn" onclick="event.stopPropagation();toggleCardExtra('${extraId}', this)">▸ Drive &amp; Legenda</button>
+      <div class="k-extra" id="${extraId}" onclick="event.stopPropagation()">
         <span class="k-field-label">Link Drive</span>
         <div class="k-drive">
           <input type="url" placeholder="Cole o link do Drive..." value="${item.driveLink}"
                  id="drive-input-${item.id}"
                  oninput="saveDriveLink('${item.id}', this.value, 'drive-link-${item.id}')"
-                 onchange="saveDriveLink('${item.id}', this.value, 'drive-link-${item.id}')" />
+                 onchange="saveDriveLink('${item.id}', this.value, 'drive-link-${item.id}')"
+                 onclick="event.stopPropagation()" />
           <a id="drive-link-${item.id}" href="${driveHref}" target="_blank" title="Abrir no Drive"
+             onclick="event.stopPropagation()"
              style="opacity:${driveLinkOpacity}; pointer-events:${item.driveLink ? 'auto' : 'none'}">📂</a>
         </div>
         <span class="k-field-label">Legenda</span>
         <div class="k-legenda">
           <textarea rows="2" placeholder="Cole ou escreva a legenda..."
+                    onclick="event.stopPropagation()"
                     onchange="saveLegenda('${item.id}', this.value)">${item.legenda}</textarea>
         </div>
       </div>
-      <div class="k-actions">
+      <div class="k-actions" onclick="event.stopPropagation()">
         <span class="k-btn ${item.state==='alert'?'active-alert':''}"         onclick="setState('${item.id}','alert')">🔧</span>
         <span class="k-btn ${item.state==='warn'?'active-warn':''}"           onclick="setState('${item.id}','warn')">⏳</span>
         <span class="k-btn ${item.state==='ok'?'active-ok':''}"               onclick="setState('${item.id}','ok')">✅</span>
@@ -476,16 +484,22 @@ function renderPlan() {
     row.innerHTML = `
       <span class="plan-date" contenteditable="true" spellcheck="false"
             onblur="saveDate('${item.id}','date',this)"
+            onclick="event.stopPropagation()"
             onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
             title="Clique para editar data">${item.date}</span>
       <span class="plan-day" contenteditable="true" spellcheck="false"
             onblur="saveDate('${item.id}','day',this)"
+            onclick="event.stopPropagation()"
             onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
             title="Clique para editar dia">${item.day}</span>
       <span class="plan-format-pill ${item.fmtCls}">${item.format}</span>
-      <span class="plan-title" contenteditable="true" spellcheck="false" onblur="saveTitle('${item.id}', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" title="Clique para editar">${item.title || 'A definir...'}</span>
-      <div class="post-check-wrap">
-        <div class="post-check ${item.posted ? 'checked' : ''}" onclick="togglePosted('${item.id}')"></div>
+      <span class="plan-title" contenteditable="true" spellcheck="false"
+            onblur="saveTitle('${item.id}', this)"
+            onclick="event.stopPropagation()"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+            title="Clique para editar">${item.title || 'A definir...'}</span>
+      <div class="post-check-wrap" onclick="event.stopPropagation()">
+        <div class="post-check ${item.posted ? 'checked' : ''}" onclick="event.stopPropagation();togglePosted('${item.id}')"></div>
         <span class="post-check-label">Postado</span>
       </div>`;
     row.dataset.id = item.id;
@@ -542,9 +556,11 @@ function updateStats() {
   document.getElementById('kcnt-warn').textContent      = warn;
   document.getElementById('kcnt-alert').textContent     = alert;
   document.getElementById('kcnt-scheduled').textContent = scheduled;
-  document.getElementById('prog-text').textContent  = ok + ' / ' + total + ' aprovados · ' + posted + ' postados';
+  const posted_k = items.filter(i => i.posted).length;
+  document.getElementById('prog-text').textContent  = ok + ' / ' + total + ' aprovados · ' + posted_k + ' postados';
   document.getElementById('prog-bar').style.width   = Math.round((ok/total)*100) + '%';
 }
+
 
 function togglePending(li) { li.classList.toggle('done'); }
 
@@ -583,6 +599,14 @@ function dateToWeekDay(dateStr) {
   return names[new Date(year, m - 1, d).getDay()];
 }
 
+function sortItems() {
+  function dateToNum(dateStr) {
+    const [d, m] = dateStr.split('/').map(Number);
+    return m * 100 + d;
+  }
+  items.sort((a, b) => dateToNum(a.date) - dateToNum(b.date));
+}
+
 function saveDate(id, field, el) {
   const item = items.find(i => i.id === id);
   const val = el.textContent.trim();
@@ -597,6 +621,7 @@ function saveDate(id, field, el) {
     }
   }
   saveItem(item);
+  sortItems();
   renderKanban();
   renderPlan();
 }
@@ -615,6 +640,7 @@ function togglePhase(bodyId, btnId) {
 }
 
 loadFromSupabase().then(() => {
+  sortItems();
   renderKanban();
   renderPlan();
   updateStats();
